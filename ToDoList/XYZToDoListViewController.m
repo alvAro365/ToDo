@@ -7,8 +7,14 @@
 //
 
 #import "XYZToDoListViewController.h"
+#import "XYZToDoItem.h"
+#import "XYZAddToDoItemViewController.h"
 
 @interface XYZToDoListViewController ()
+
+@property NSMutableArray *toDoItems;
+
+
 
 @end
 
@@ -16,12 +22,23 @@
 
 - (IBAction)unWindToList:(UIStoryboardSegue *)segue {
     
+    XYZAddToDoItemViewController *source = [segue sourceViewController];
     
+    XYZToDoItem *item = source.toDoItem;
+    
+    if (item != nil) {
+        
+        [self.toDoItems addObject:item];
+        [self.tableView reloadData];
+    }
     
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.toDoItems = [[NSMutableArray alloc] init];
+    
+    [self loadInitialData];
     
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -35,27 +52,77 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)loadInitialData {
+    
+    XYZToDoItem *item1 = [[XYZToDoItem alloc] init];
+    item1.itemName = @"Buy milk";
+    [self.toDoItems addObject:item1];
+    
+    XYZToDoItem *item2 = [[XYZToDoItem alloc] init];
+    item2.itemName = @"Buy eggs";
+    [self.toDoItems addObject:item2];
+    
+    XYZToDoItem *item3 = [[XYZToDoItem alloc] init];
+    item3.itemName = @"Read a book";
+    [self.toDoItems addObject:item3];
+    
+    
+}
+
+
+
+
+
+
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
 #warning Incomplete implementation, return the number of sections
-    return 0;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 #warning Incomplete implementation, return the number of rows
-    return 0;
+    return [self.toDoItems count];
 }
 
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+    
+    static NSString *CellIdentifier = @"ListPrototypeCell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     
     // Configure the cell...
     
+    XYZToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
+    cell.textLabel.text = toDoItem.itemName;
+    
+    if (toDoItem.completed) {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    
     return cell;
 }
-*/
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    
+    XYZToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
+    
+    tappedItem.completed = !tappedItem.completed;
+    
+    [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+    
+    
+    
+    
+    
+}
+
 
 /*
 // Override to support conditional editing of the table view.
