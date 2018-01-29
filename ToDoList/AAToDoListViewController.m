@@ -6,11 +6,11 @@
 //  Copyright © 2018 Alvar Aronija. All rights reserved.
 //
 
-#import "XYZToDoListViewController.h"
-#import "XYZToDoItem.h"
-#import "XYZAddToDoItemViewController.h"
+#import "AAToDoListViewController.h"
+#import "AAToDoItem.h"
+#import "AAAddToDoItemViewController.h"
 
-@interface XYZToDoListViewController ()
+@interface AAToDoListViewController ()
 
 @property NSMutableArray *toDoItems;
 
@@ -18,17 +18,20 @@
 
 @end
 
-@implementation XYZToDoListViewController
+@implementation AAToDoListViewController
 
 - (IBAction)unWindToList:(UIStoryboardSegue *)segue {
     
-    XYZAddToDoItemViewController *source = [segue sourceViewController];
+    AAAddToDoItemViewController *source = [segue sourceViewController];
     
-    XYZToDoItem *item = source.toDoItem;
+    AAToDoItem *item = source.toDoItem;
+    
     
     if (item != nil) {
         
         [self.toDoItems addObject:item];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.toDoItems];
+        [self.savedToDos setObject:data forKey:@"toDoItems"];
         [self.tableView reloadData];
     }
     
@@ -37,8 +40,18 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.toDoItems = [[NSMutableArray alloc] init];
+    self.savedToDos = [NSUserDefaults standardUserDefaults];
     
-    [self loadInitialData];
+    
+    NSData *itemsData = [self.savedToDos objectForKey:@"toDoItems"];
+    NSArray *items = [NSKeyedUnarchiver unarchiveObjectWithData:itemsData];
+    
+    if(items) {
+        self.toDoItems = items.mutableCopy;
+
+    }
+    
+//    [self loadInitialData];
     
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -52,23 +65,32 @@
     // Dispose of any resources that can be recreated.
 }
 
+/*
 - (void)loadInitialData {
     
-    XYZToDoItem *item1 = [[XYZToDoItem alloc] init];
+    AAToDoItem *item1 = [[AAToDoItem alloc] init];
     item1.itemName = @"Buy milk";
     [self.toDoItems addObject:item1];
     
-    XYZToDoItem *item2 = [[XYZToDoItem alloc] init];
+    AAToDoItem *item2 = [[AAToDoItem alloc] init];
     item2.itemName = @"Buy eggs";
     [self.toDoItems addObject:item2];
     
-    XYZToDoItem *item3 = [[XYZToDoItem alloc] init];
+    AAToDoItem *item3 = [[AAToDoItem alloc] init];
     item3.itemName = @"Read a book";
     [self.toDoItems addObject:item3];
     
     
-}
+    if (self.savedToDos) {
+        NSData *itemsData = [self.savedToDos objectForKey:@"toDoItems"];
+        NSArray *items = [NSKeyedUnarchiver unarchiveObjectWithData:itemsData];
+        
+        self.toDoItems = items.mutableCopy;
+    }
 
+    
+}
+*/
 
 
 
@@ -95,7 +117,7 @@
     
     // Configure the cell...
     
-    XYZToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
+    AAToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
     cell.textLabel.text = toDoItem.itemName;
     
     if (toDoItem.completed) {
@@ -111,7 +133,7 @@
     
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     
-    XYZToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
+    AAToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
     
     tappedItem.completed = !tappedItem.completed;
     

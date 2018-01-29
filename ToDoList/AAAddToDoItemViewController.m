@@ -6,24 +6,24 @@
 //  Copyright © 2018 Alvar Aronija. All rights reserved.
 //
 
-#import "XYZAddToDoItemViewController.h"
+#import "AAAddToDoItemViewController.h"
 
 
-@interface XYZAddToDoItemViewController ()
+@interface AAAddToDoItemViewController ()
 @property (weak, nonatomic) IBOutlet UITextField *textField;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *doneButton;
 
 
 @end
 
-@implementation XYZAddToDoItemViewController
+@implementation AAAddToDoItemViewController
 
 - (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
     if(sender != self.doneButton) return;
     
     if (self.textField.text.length > 0) {
-        self.toDoItem = [[XYZToDoItem alloc] init];
+        self.toDoItem = [[AAToDoItem alloc] init];
         
         self.toDoItem.itemName = self.textField.text;
         

@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "XYZToDoItem.h"
+#import "AAToDoItem.h"
 
-@interface XYZAddToDoItemViewController : UIViewController
+@interface AAAddToDoItemViewController : UIViewController
 
-@property (nonatomic) XYZToDoItem *toDoItem;
+@property (nonatomic) AAToDoItem *toDoItem;
 
 
 
