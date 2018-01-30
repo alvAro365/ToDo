@@ -9,6 +9,7 @@
 #import "AAToDoListViewController.h"
 #import "AAToDoItem.h"
 #import "AAAddToDoItemViewController.h"
+#import "AppDelegate.h"
 
 @interface AAToDoListViewController ()
 
@@ -26,9 +27,7 @@
     
     AAToDoItem *item = source.toDoItem;
     
-    
     if (item != nil) {
-        
         [self.toDoItems addObject:item];
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.toDoItems];
         [self.savedToDos setObject:data forKey:@"toDoItems"];
@@ -39,6 +38,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.navigationItem.leftBarButtonItem = self.editButtonItem;
     self.toDoItems = [[NSMutableArray alloc] init];
     self.savedToDos = [NSUserDefaults standardUserDefaults];
     
@@ -48,53 +48,20 @@
     
     if(items) {
         self.toDoItems = items.mutableCopy;
+    
 
     }
     
-//    [self loadInitialData];
-    
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
+
+
+
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
-/*
-- (void)loadInitialData {
-    
-    AAToDoItem *item1 = [[AAToDoItem alloc] init];
-    item1.itemName = @"Buy milk";
-    [self.toDoItems addObject:item1];
-    
-    AAToDoItem *item2 = [[AAToDoItem alloc] init];
-    item2.itemName = @"Buy eggs";
-    [self.toDoItems addObject:item2];
-    
-    AAToDoItem *item3 = [[AAToDoItem alloc] init];
-    item3.itemName = @"Read a book";
-    [self.toDoItems addObject:item3];
-    
-    
-    if (self.savedToDos) {
-        NSData *itemsData = [self.savedToDos objectForKey:@"toDoItems"];
-        NSArray *items = [NSKeyedUnarchiver unarchiveObjectWithData:itemsData];
-        
-        self.toDoItems = items.mutableCopy;
-    }
-
-    
-}
-*/
-
-
-
-
 
 
 #pragma mark - Table view data source
@@ -112,19 +79,22 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    static NSString *CellIdentifier = @"ListPrototypeCell";
+    static NSString *CellIdentifier = @"ToDoItemCell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     
     // Configure the cell...
     
     AAToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
     cell.textLabel.text = toDoItem.itemName;
-    
+
+    //TODO: get boolean value form NSUserdefaults
     if (toDoItem.completed) {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
     } else {
         cell.accessoryType = UITableViewCellAccessoryNone;
     }
+    
+
     
     return cell;
 }
@@ -138,10 +108,20 @@
     tappedItem.completed = !tappedItem.completed;
     
     [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+
+}
+
+-(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    //if row is deleted remove it from the list
     
+    if(editingStyle == UITableViewCellEditingStyleDelete) {
+        
+        [self.toDoItems removeObjectAtIndex:indexPath.row];
+        //updates the view
+        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }
     
-    
-    
+    //TODO: fixa save new array to NSUserDefaults
     
 }
 
