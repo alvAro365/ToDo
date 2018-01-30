@@ -14,6 +14,9 @@
 @interface AAToDoListViewController ()
 
 @property NSMutableArray *toDoItems;
+@property NSDictionary *sections;
+@property NSMutableArray *doneItems;
+@property NSArray *sectionTitels;
 
 
 
@@ -40,7 +43,9 @@
     [super viewDidLoad];
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
     self.toDoItems = [[NSMutableArray alloc] init];
+    self.doneItems = [[NSMutableArray alloc] init];
     self.savedToDos = [NSUserDefaults standardUserDefaults];
+    
     
     
     NSData *itemsData = [self.savedToDos objectForKey:@"toDoItems"];
@@ -52,10 +57,14 @@
 
     }
     
+    self.sections = @{@"To-Do" : self.toDoItems,
+                      @"Done"  : self.doneItems
+                      };
+    
+    self.sectionTitels = [self.sections allKeys];
+    
+    
 }
-
-
-
 
 
 - (void)didReceiveMemoryWarning {
@@ -68,12 +77,16 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
 #warning Incomplete implementation, return the number of sections
-    return 1;
+    return [self.sectionTitels count];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    NSString *sectionTitle = [self.sectionTitels objectAtIndex:section];
+    NSArray *sectionToDos = [self.sections objectForKey:sectionTitle];
+    
 #warning Incomplete implementation, return the number of rows
-    return [self.toDoItems count];
+    return [sectionToDos count];
 }
 
 
@@ -118,10 +131,18 @@
         
         [self.toDoItems removeObjectAtIndex:indexPath.row];
         //updates the view
-        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        
+
     }
     
     //TODO: fixa save new array to NSUserDefaults
+    
+}
+
+- (NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    
+    return [self.sectionTitels objectAtIndex:section];
     
 }
 
