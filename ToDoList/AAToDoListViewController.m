@@ -32,6 +32,7 @@
     
     if (item != nil) {
         [self.toDoItems addObject:item];
+     //   [self.doneItems addObject:item];
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.toDoItems];
         [self.savedToDos setObject:data forKey:@"toDoItems"];
         [self.tableView reloadData];
@@ -41,10 +42,11 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.navigationItem.leftBarButtonItem = self.editButtonItem;
+ //   self.navigationItem.leftBarButtonItem = self.editButtonItem;
     self.toDoItems = [[NSMutableArray alloc] init];
     self.doneItems = [[NSMutableArray alloc] init];
     self.savedToDos = [NSUserDefaults standardUserDefaults];
+    
     
     
     
@@ -97,15 +99,50 @@
     
     // Configure the cell...
     
-    AAToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
-    cell.textLabel.text = toDoItem.itemName;
+    if(indexPath.section == 0) {
+        AAToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
+        cell.textLabel.text = toDoItem.itemName;
 
-    //TODO: get boolean value form NSUserdefaults
-    if (toDoItem.completed) {
-        cell.accessoryType = UITableViewCellAccessoryCheckmark;
-    } else {
-        cell.accessoryType = UITableViewCellAccessoryNone;
+        //TODO: get boolean value form NSUserdefaults
+        if (toDoItem.completed) {
+            NSLog(@"TodoSection: %ld", (long)indexPath.section);
+            
+            [self.doneItems addObject:toDoItem];
+            [self.toDoItems removeObjectAtIndex:indexPath.row];
+            
+            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            [self.tableView reloadData];
+            
+        } else {
+            cell.accessoryType = UITableViewCellAccessoryNone;
+        }
     }
+    
+    if(indexPath.section == 1) {
+        
+        if (self.doneItems) {
+            AAToDoItem *doneItem = [self.doneItems objectAtIndex:indexPath.row];
+            
+            if (doneItem.completed) {
+                cell.accessoryType = UITableViewCellAccessoryCheckmark;
+            }
+            
+            cell.textLabel.text = doneItem.itemName;
+            NSLog(@"Done item: %d", doneItem.completed);
+            
+            if(!doneItem.completed) {
+                NSLog(@"Done item 2: %d", doneItem.completed);
+                cell.accessoryType = UITableViewCellAccessoryNone;
+                [self.toDoItems addObject:doneItem];
+                [self.doneItems removeObjectAtIndex:indexPath.row];
+                [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+                [self.tableView reloadData];
+            }
+        }
+
+    }
+    
+    
     
 
     
@@ -115,13 +152,23 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
-    
-    AAToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
-    
-    tappedItem.completed = !tappedItem.completed;
-    
-    [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
 
+    
+    if(indexPath.section == 0) {
+        AAToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
+        tappedItem.completed = !tappedItem.completed;
+        
+        [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+    }else {
+        AAToDoItem *tappedItem = [self.doneItems objectAtIndex:indexPath.row];
+        NSLog(@"Section: %ld", (long)indexPath.section);
+        tappedItem.completed = !tappedItem.completed;
+        
+        NSLog(@"Tapped item: %d",tappedItem.completed);
+        
+        [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+        
+    }
 }
 
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -129,10 +176,16 @@
     
     if(editingStyle == UITableViewCellEditingStyleDelete) {
         
-        [self.toDoItems removeObjectAtIndex:indexPath.row];
-        //updates the view
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        
+        if(indexPath.section == 0) {
+            [self.toDoItems removeObjectAtIndex:indexPath.row];
+            //updates the view
+            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        } else {
+            [self.doneItems removeObjectAtIndex:indexPath.row];
+            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            
+            
+        }
 
     }
     
@@ -145,6 +198,27 @@
     return [self.sectionTitels objectAtIndex:section];
     
 }
+
+- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
+{
+    return [self.sectionTitels indexOfObject:title];
+}
+
+
+// Override to support rearranging the table view.
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
+    
+    if(fromIndexPath != toIndexPath) {
+        
+        
+        
+    
+        
+    
+    }
+    
+}
+
 
 
 /*
@@ -167,11 +241,6 @@
 }
 */
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
 
 /*
 // Override to support conditional rearranging of the table view.
