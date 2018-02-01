@@ -12,6 +12,7 @@
 
 @property NSString *itemName;
 @property BOOL completed;
+@property BOOL isImportant;
 
 
 

@@ -16,7 +16,7 @@
     
     [aCoder encodeObject:self.itemName forKey:@"itemName"];
     [aCoder encodeBool:self.completed forKey:@"completed"];
-
+    [aCoder encodeBool:self.completed forKey:@"completed"];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
@@ -26,6 +26,7 @@
     if(self) {
         self.itemName = [aDecoder decodeObjectForKey:@"itemName"];
         self.completed = [aDecoder decodeBoolForKey:@"completed"];
+        self.isImportant = [aDecoder decodeBoolForKey:@"isImportant"];
         
     
     }

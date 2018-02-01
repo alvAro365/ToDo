@@ -33,10 +33,16 @@
     if (item != nil) {
         [self.toDoItems addObject:item];
      //   [self.doneItems addObject:item];
-        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.toDoItems];
-        [self.savedToDos setObject:data forKey:@"toDoItems"];
+        [self saveToDos];
         [self.tableView reloadData];
     }
+    
+}
+
+-(void)saveToDos{
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.toDoItems];
+    [self.savedToDos setObject:data forKey:@"toDoItems"];
+    
     
 }
 
@@ -45,6 +51,7 @@
  //   self.navigationItem.leftBarButtonItem = self.editButtonItem;
     self.toDoItems = [[NSMutableArray alloc] init];
     self.doneItems = [[NSMutableArray alloc] init];
+    
     self.savedToDos = [NSUserDefaults standardUserDefaults];
     
     
@@ -55,17 +62,12 @@
     
     if(items) {
         self.toDoItems = items.mutableCopy;
-    
-
     }
     
     self.sections = @{@"To-Do" : self.toDoItems,
                       @"Done"  : self.doneItems
                       };
-    
     self.sectionTitels = [self.sections allKeys];
-    
-    
 }
 
 
@@ -78,16 +80,16 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-#warning Incomplete implementation, return the number of sections
     return [self.sectionTitels count];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    
+ 
     NSString *sectionTitle = [self.sectionTitels objectAtIndex:section];
     NSArray *sectionToDos = [self.sections objectForKey:sectionTitle];
+
+    NSLog(@"NumberOfRowsInSection %ld %lu",(long)section, (unsigned long)[sectionToDos count]);
     
-#warning Incomplete implementation, return the number of rows
     return [sectionToDos count];
 }
 
@@ -98,84 +100,78 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     
     // Configure the cell...
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
     
+    AAToDoItem *toDoItem = nil;
     if(indexPath.section == 0) {
-        AAToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
+        toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
         cell.textLabel.text = toDoItem.itemName;
-
-        //TODO: get boolean value form NSUserdefaults
-        if (toDoItem.completed) {
-            NSLog(@"TodoSection: %ld", (long)indexPath.section);
-            
-            [self.doneItems addObject:toDoItem];
-            [self.toDoItems removeObjectAtIndex:indexPath.row];
-            
-            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-            [self.tableView reloadData];
-            
-        } else {
-            cell.accessoryType = UITableViewCellAccessoryNone;
-        }
-    }
-    
-    if(indexPath.section == 1) {
-        
-        if (self.doneItems) {
+        if(toDoItem.completed)
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        [cell addGestureRecognizer:longPressGesture];
+    } else {
             AAToDoItem *doneItem = [self.doneItems objectAtIndex:indexPath.row];
-            
-            if (doneItem.completed) {
-                cell.accessoryType = UITableViewCellAccessoryCheckmark;
-            }
-            
             cell.textLabel.text = doneItem.itemName;
-            NSLog(@"Done item: %d", doneItem.completed);
-            
-            if(!doneItem.completed) {
-                NSLog(@"Done item 2: %d", doneItem.completed);
-                cell.accessoryType = UITableViewCellAccessoryNone;
-                [self.toDoItems addObject:doneItem];
-                [self.doneItems removeObjectAtIndex:indexPath.row];
-                [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-                [self.tableView reloadData];
-            }
-        }
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+
 
     }
-    
-    
-    
-
-    
     return cell;
+    
 }
+
+- (void)longPress:(UILongPressGestureRecognizer *)gesture {
+    
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        UITableViewCell *cell = (UITableViewCell*) [gesture view];
+        
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+        
+        if(indexPath.section == 0) {
+            AAToDoItem *importantItem = [self.toDoItems objectAtIndex:indexPath.row];
+            importantItem.isImportant = !importantItem.isImportant;
+            
+            if(importantItem.isImportant){
+                cell.textLabel.textColor = [UIColor redColor];
+            } else {
+                cell.textLabel.textColor = [UIColor blackColor];
+            }
+
+        }
+    }
+}
+
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
-
+    
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     
     if(indexPath.section == 0) {
         AAToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
         tappedItem.completed = !tappedItem.completed;
-        
-        [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-    }else {
-        AAToDoItem *tappedItem = [self.doneItems objectAtIndex:indexPath.row];
-        NSLog(@"Section: %ld", (long)indexPath.section);
-        tappedItem.completed = !tappedItem.completed;
-        
-        NSLog(@"Tapped item: %d",tappedItem.completed);
-        
-        [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-        
+        if(tappedItem.completed) {
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+            
+            if(self.doneItems) {
+                [self.doneItems addObject:tappedItem];
+                [self.toDoItems removeObjectAtIndex:indexPath.row];
+                [self.tableView reloadData];
+            }
+
+        }else {
+            cell.accessoryType = UITableViewCellAccessoryNone;
+        }
     }
+    
+    [self saveToDos];
 }
 
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     //if row is deleted remove it from the list
     
     if(editingStyle == UITableViewCellEditingStyleDelete) {
-        
         if(indexPath.section == 0) {
             [self.toDoItems removeObjectAtIndex:indexPath.row];
             //updates the view
@@ -184,11 +180,9 @@
             [self.doneItems removeObjectAtIndex:indexPath.row];
             [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
             
-            
         }
-
     }
-    
+    [self saveToDos];
     //TODO: fixa save new array to NSUserDefaults
     
 }
@@ -205,19 +199,47 @@
 }
 
 
+-(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if(indexPath.section == 0) {
+        AAToDoItem *importantItem = [self.toDoItems objectAtIndex:indexPath.row];
+        
+        
+        if(importantItem.isImportant){
+            cell.textLabel.textColor = [UIColor redColor];
+        } else {
+            cell.textLabel.textColor = [UIColor blackColor];
+        }
+        
+        if(importantItem.completed)
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        else
+            cell.accessoryType = UITableViewCellAccessoryNone;
+    
+    }
+}
+
+
+
+/*
 // Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
     
+    AAToDoItem *item = [self.toDoItems objectAtIndex:fromIndexPath.row];
+    
     if(fromIndexPath != toIndexPath) {
+       
+        [self.toDoItems removeObjectAtIndex:fromIndexPath.row];
+        [self.doneItems insertObject:item atIndex:toIndexPath.row];
+        [tableView reloadData];
         
         
-        
-    
-        
-    
     }
     
+    
 }
+*/
+
 
 
 
