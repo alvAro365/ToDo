@@ -28,6 +28,7 @@
         self.toDoItem.itemName = self.textField.text;
         
         self.toDoItem.completed = NO;
+        self.toDoItem.isImportant = NO;
         
 
     }
