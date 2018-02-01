@@ -49,7 +49,6 @@
     self.toDoItems = [[NSMutableArray alloc] init];
     self.doneItems = [[NSMutableArray alloc] init];
     self.savedToDos = [NSUserDefaults standardUserDefaults];
-    
     [self getData];
 }
 
@@ -60,11 +59,10 @@
     NSArray *toDoItems = [NSKeyedUnarchiver unarchiveObjectWithData:dataToDo];
     NSArray *doneItems = [NSKeyedUnarchiver unarchiveObjectWithData:dataDone];
     
-    
-    if(toDoItems) {
+    if( toDoItems) {
         self.toDoItems = toDoItems.mutableCopy;
     }
-    if(doneItems) {
+    if (doneItems) {
         self.doneItems = doneItems.mutableCopy;
     }
     
@@ -73,7 +71,6 @@
                       };
     self.sectionTitels = [self.sections allKeys];
 }
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -98,12 +95,13 @@
     UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
     
     AAToDoItem *toDoItem = nil;
-    if(indexPath.section == 0) {
+    if (indexPath.section == 0) {
         toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
         cell.textLabel.text = toDoItem.itemName;
         [cell addGestureRecognizer:longPressGesture];
     
-    }else {
+    }
+    else {
         AAToDoItem *doneItem = [self.doneItems objectAtIndex:indexPath.row];
         cell.textLabel.text = doneItem.itemName;
         if(doneItem.completed) {
@@ -126,7 +124,6 @@
             importantItem.isImportant = !importantItem.isImportant;
             [self saveToDos];
             [self.tableView reloadData];
-            
         }
     }
 }
@@ -148,11 +145,12 @@
 }
 
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
-    if(editingStyle == UITableViewCellEditingStyleDelete) {
-        if(indexPath.section == 0) {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        if (indexPath.section == 0) {
             [self.toDoItems removeObjectAtIndex:indexPath.row];
             [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        } else {
+        }
+        else {
             [self.doneItems removeObjectAtIndex:indexPath.row];
             [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         }
@@ -162,7 +160,6 @@
 }
 
 - (NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
-
     return [self.sectionTitels objectAtIndex:section];
     
 }
@@ -177,23 +174,24 @@
     if(indexPath.section == 0) {
         AAToDoItem *importantItem = [self.toDoItems objectAtIndex:indexPath.row];
         
-        if(importantItem.isImportant){
+        if (importantItem.isImportant) {
             cell.textLabel.textColor = [UIColor redColor];
-        } else {
+        }
+        else {
             cell.textLabel.textColor = [UIColor blackColor];
         }
         
-        if(importantItem.completed){
+        if (importantItem.completed) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
-            cell.textLabel.textColor = [UIColor greenColor];
         
-        }else{
+        }
+        else {
             cell.accessoryType = UITableViewCellAccessoryNone;
         }
-    }else {
+    }
+    else {
         cell.textLabel.textColor = [UIColor blackColor];
     }
-    
 }
 
 
