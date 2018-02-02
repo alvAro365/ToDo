@@ -23,18 +23,14 @@
 @implementation AAToDoListViewController
 
 - (IBAction)unWindToList:(UIStoryboardSegue *)segue {
-    
     AAAddToDoItemViewController *source = [segue sourceViewController];
     AAToDoItem *item = source.toDoItem;
-    
     if (item != nil) {
-
         [[self.toDoListData toDoList] addObject:item];
         NSLog(@"TodolistData todolist count: %lu", (unsigned long)[[self.toDoListData toDoList] count]);
         [self.toDoListData saveData];
         [self.tableView reloadData];
     }
-    
 }
 
 - (void)viewDidLoad {
@@ -69,13 +65,11 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ToDoItemCell" forIndexPath:indexPath];
     UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
-    
     AAToDoItem *toDoItem = nil;
     if (indexPath.section == 0) {
         toDoItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
         cell.textLabel.text = toDoItem.itemName;
         [cell addGestureRecognizer:longPressGesture];
-    
     }
     else {
         AAToDoItem *doneItem = [[self.toDoListData doneList] objectAtIndex:indexPath.row];
@@ -91,9 +85,7 @@
     
     if (gesture.state == UIGestureRecognizerStateBegan) {
         UITableViewCell *cell = (UITableViewCell*) [gesture view];
-        
         NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-        
         if(indexPath.section == 0) {
             AAToDoItem *importantItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
             importantItem.isImportant = !importantItem.isImportant;
@@ -112,7 +104,6 @@
         if(tappedItem.completed) {
             if([self.toDoListData doneList]) {
                 [[self.toDoListData doneList] addObject:tappedItem];
-                NSLog(@"TodolistData donelist count: %lu", (unsigned long)[[self.toDoListData doneList] count]);
                 [[self.toDoListData toDoList] removeObjectAtIndex:indexPath.row];
                 [self.toDoListData saveData];
                 [self.tableView reloadData];
@@ -175,24 +166,9 @@
 /*
 // Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-    
-    AAToDoItem *item = [self.toDoItems objectAtIndex:fromIndexPath.row];
-    
-    if(fromIndexPath != toIndexPath) {
-       
-        [self.toDoItems removeObjectAtIndex:fromIndexPath.row];
-        [self.doneItems insertObject:item atIndex:toIndexPath.row];
-        [tableView reloadData];
-        
-        
-    }
-    
-    
+ 
 }
 */
-
-
-
 
 /*
 // Override to support conditional editing of the table view.

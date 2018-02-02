@@ -38,17 +38,16 @@
 -(NSMutableArray*)getToDoList {
     NSData *dataToDoList = [self.savedToDoList objectForKey:@"toDoList"];
     NSArray *toDoListArray = [NSKeyedUnarchiver unarchiveObjectWithData:dataToDoList];
-    if(self.toDoList) {
+    if(toDoListArray) {
         self.toDoList = toDoListArray.mutableCopy;
     }
     return self.toDoList;
-    
 }
 
 -(NSMutableArray*)getDoneList {
     NSData *dataDoneList = [self.savedToDoList objectForKey:@"doneList"];
     NSArray *doneListArray = [NSKeyedUnarchiver unarchiveObjectWithData:dataDoneList];
-    if (self.doneList) {
+    if (doneListArray) {
         self.doneList = doneListArray.mutableCopy;
     }
     return self.doneList;

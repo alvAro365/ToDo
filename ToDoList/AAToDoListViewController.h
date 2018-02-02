@@ -13,6 +13,4 @@
 
 @property  (nonatomic) NSUserDefaults *savedToDos;
 
-
-
 @end

@@ -14,6 +14,4 @@
 @property BOOL completed;
 @property BOOL isImportant;
 
-
-
 @end

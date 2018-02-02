@@ -13,6 +13,4 @@
 
 @property (nonatomic) AAToDoItem *toDoItem;
 
-
-
 @end
