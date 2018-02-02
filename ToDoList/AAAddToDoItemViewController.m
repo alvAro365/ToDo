@@ -26,9 +26,8 @@
         self.toDoItem = [[AAToDoItem alloc] init];
         
         self.toDoItem.itemName = self.textField.text;
-        
-        self.toDoItem.completed = NO;
-        self.toDoItem.isImportant = NO;
+ //       self.toDoItem.completed = NO;
+ //       self.toDoItem.isImportant = NO;
         
 
     }

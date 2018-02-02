@@ -10,8 +10,6 @@
 
 @implementation AAToDoItem
 
-
-
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     
     [aCoder encodeObject:self.itemName forKey:@"itemName"];

@@ -10,13 +10,13 @@
 #import "AAToDoItem.h"
 #import "AAAddToDoItemViewController.h"
 #import "AppDelegate.h"
+#import "ToDoListData.h"
 
 @interface AAToDoListViewController ()
 
-@property NSMutableArray *toDoItems;
 @property NSDictionary *sections;
-@property NSMutableArray *doneItems;
 @property NSArray *sectionTitels;
+@property ToDoListData *toDoListData;
 
 @end
 
@@ -25,49 +25,28 @@
 - (IBAction)unWindToList:(UIStoryboardSegue *)segue {
     
     AAAddToDoItemViewController *source = [segue sourceViewController];
-    
     AAToDoItem *item = source.toDoItem;
     
     if (item != nil) {
-        [self.toDoItems addObject:item];
-        [self saveToDos];
+
+        [[self.toDoListData toDoList] addObject:item];
+        NSLog(@"TodolistData todolist count: %lu", (unsigned long)[[self.toDoListData toDoList] count]);
+        [self.toDoListData saveData];
         [self.tableView reloadData];
     }
     
 }
 
--(void)saveToDos{
-    NSData *dataToDo = [NSKeyedArchiver archivedDataWithRootObject:self.toDoItems];
-    NSData *dataDone = [NSKeyedArchiver archivedDataWithRootObject:self.doneItems];
-    [self.savedToDos setObject:dataToDo forKey:@"toDoItems"];
-    [self.savedToDos setObject:dataDone forKey:@"doneItems"];
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
- //   self.navigationItem.leftBarButtonItem = self.editButtonItem;
-    self.toDoItems = [[NSMutableArray alloc] init];
-    self.doneItems = [[NSMutableArray alloc] init];
-    self.savedToDos = [NSUserDefaults standardUserDefaults];
-    [self getData];
+    self.toDoListData = [[ToDoListData alloc] init];
+    [self initializeData];
+    //   self.navigationItem.leftBarButtonItem = self.editButtonItem;
 }
 
--(void)getData {
-    
-    NSData *dataToDo = [self.savedToDos objectForKey:@"toDoItems"];
-    NSData *dataDone = [self.savedToDos objectForKey:@"doneItems"];
-    NSArray *toDoItems = [NSKeyedUnarchiver unarchiveObjectWithData:dataToDo];
-    NSArray *doneItems = [NSKeyedUnarchiver unarchiveObjectWithData:dataDone];
-    
-    if( toDoItems) {
-        self.toDoItems = toDoItems.mutableCopy;
-    }
-    if (doneItems) {
-        self.doneItems = doneItems.mutableCopy;
-    }
-    
-    self.sections = @{@"To-Do" : self.toDoItems,
-                      @"Done"  : self.doneItems
+-(void)initializeData {
+    self.sections = @{@"To-Do" : [self.toDoListData getToDoList],
+                      @"Done"  : [self.toDoListData getDoneList],
                       };
     self.sectionTitels = [self.sections allKeys];
 }
@@ -75,8 +54,6 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
-
-
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -89,27 +66,25 @@
     return [sectionToDos count];
 }
 
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ToDoItemCell" forIndexPath:indexPath];
     UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
     
     AAToDoItem *toDoItem = nil;
     if (indexPath.section == 0) {
-        toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
+        toDoItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
         cell.textLabel.text = toDoItem.itemName;
         [cell addGestureRecognizer:longPressGesture];
     
     }
     else {
-        AAToDoItem *doneItem = [self.doneItems objectAtIndex:indexPath.row];
+        AAToDoItem *doneItem = [[self.toDoListData doneList] objectAtIndex:indexPath.row];
         cell.textLabel.text = doneItem.itemName;
         if(doneItem.completed) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
         }
     }
     return cell;
-    
 }
 
 - (void)longPress:(UILongPressGestureRecognizer *)gesture {
@@ -120,9 +95,9 @@
         NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
         
         if(indexPath.section == 0) {
-            AAToDoItem *importantItem = [self.toDoItems objectAtIndex:indexPath.row];
+            AAToDoItem *importantItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
             importantItem.isImportant = !importantItem.isImportant;
-            [self saveToDos];
+            [self.toDoListData saveData];
             [self.tableView reloadData];
         }
     }
@@ -132,12 +107,14 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     if(indexPath.section == 0) {
-        AAToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
+        AAToDoItem *tappedItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
         tappedItem.completed = !tappedItem.completed;
         if(tappedItem.completed) {
-            if(self.doneItems) {
-                [self.doneItems addObject:tappedItem];
-                [self.toDoItems removeObjectAtIndex:indexPath.row];
+            if([self.toDoListData doneList]) {
+                [[self.toDoListData doneList] addObject:tappedItem];
+                NSLog(@"TodolistData donelist count: %lu", (unsigned long)[[self.toDoListData doneList] count]);
+                [[self.toDoListData toDoList] removeObjectAtIndex:indexPath.row];
+                [self.toDoListData saveData];
                 [self.tableView reloadData];
             }
         }
@@ -147,21 +124,20 @@
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         if (indexPath.section == 0) {
-            [self.toDoItems removeObjectAtIndex:indexPath.row];
+            [[self.toDoListData toDoList] removeObjectAtIndex:indexPath.row];
             [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         }
         else {
-            [self.doneItems removeObjectAtIndex:indexPath.row];
+            [[self.toDoListData doneList] removeObjectAtIndex:indexPath.row];
             [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         }
     }
-    [self saveToDos];
+    [self.toDoListData saveData];
     
 }
 
 - (NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
-    return [self.sectionTitels objectAtIndex:section];
-    
+    return [self.sectionTitels objectAtIndex:section];    
 }
 
 - (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index{
@@ -172,18 +148,17 @@
 -(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath{
     
     if(indexPath.section == 0) {
-        AAToDoItem *importantItem = [self.toDoItems objectAtIndex:indexPath.row];
+        AAToDoItem *toDoItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
         
-        if (importantItem.isImportant) {
+        if (toDoItem.isImportant) {
             cell.textLabel.textColor = [UIColor redColor];
         }
         else {
             cell.textLabel.textColor = [UIColor blackColor];
         }
         
-        if (importantItem.completed) {
+        if (toDoItem.completed) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
-        
         }
         else {
             cell.accessoryType = UITableViewCellAccessoryNone;
