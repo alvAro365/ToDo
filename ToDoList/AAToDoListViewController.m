@@ -18,9 +18,13 @@
 @property NSArray *sectionTitels;
 @property ToDoListData *toDoListData;
 
+
 @end
 
 @implementation AAToDoListViewController
+
+const int TODO_SECTION = 0;
+const int DONE_SECTION = 1;
 
 - (IBAction)unWindToList:(UIStoryboardSegue *)segue {
     AAAddToDoItemViewController *source = [segue sourceViewController];
@@ -98,7 +102,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
-    if(indexPath.section == 0) {
+    if(indexPath.section == TODO_SECTION) {
         AAToDoItem *tappedItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
         tappedItem.completed = !tappedItem.completed;
         if(tappedItem.completed) {
@@ -114,7 +118,7 @@
 
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        if (indexPath.section == 0) {
+        if (indexPath.section == TODO_SECTION) {
             [[self.toDoListData toDoList] removeObjectAtIndex:indexPath.row];
             [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         }
@@ -138,7 +142,7 @@
 
 -(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath{
     
-    if(indexPath.section == 0) {
+    if(indexPath.section == TODO_SECTION) {
         AAToDoItem *toDoItem = [[self.toDoListData toDoList] objectAtIndex:indexPath.row];
         
         if (toDoItem.isImportant) {

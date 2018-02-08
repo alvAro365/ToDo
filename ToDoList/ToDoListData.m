@@ -13,9 +13,13 @@
 
 @property (nonatomic) NSUserDefaults *savedToDoList;
 
+
+
 @end
 
 @implementation ToDoListData
+NSString *const TO_DO_LIST = @"toDoList";
+NSString *const DONE_LIST = @"doneList";
 
 -(instancetype)init {
     self = [super init];
@@ -28,29 +32,36 @@
 }
 
 -(void)saveData {
-    
-    NSData *dataToDoList = [NSKeyedArchiver archivedDataWithRootObject:self.toDoList];
-    NSData *dataDoneList = [NSKeyedArchiver archivedDataWithRootObject:self.doneList];
-    [self.savedToDoList setObject:dataToDoList forKey:@"toDoList"];
-    [self.savedToDoList setObject:dataDoneList forKey:@"doneList"];
+    [self savingData:self.toDoList with:TO_DO_LIST];
+    [self savingData:self.doneList with:DONE_LIST];
 }
 
 -(NSMutableArray*)getToDoList {
-    NSData *dataToDoList = [self.savedToDoList objectForKey:@"toDoList"];
-    NSArray *toDoListArray = [NSKeyedUnarchiver unarchiveObjectWithData:dataToDoList];
-    if(toDoListArray) {
-        self.toDoList = toDoListArray.mutableCopy;
-    }
+    [self setDataList:self.savedToDoList with:TO_DO_LIST];
     return self.toDoList;
 }
 
 -(NSMutableArray*)getDoneList {
-    NSData *dataDoneList = [self.savedToDoList objectForKey:@"doneList"];
-    NSArray *doneListArray = [NSKeyedUnarchiver unarchiveObjectWithData:dataDoneList];
-    if (doneListArray) {
-        self.doneList = doneListArray.mutableCopy;
-    }
+    [self setDataList:self.savedToDoList with:DONE_LIST];
     return self.doneList;
+}
+
+- (void)setDataList:(NSUserDefaults*)savedData with:(NSString*)theKey {
+    
+    NSData *dataToDoList= [savedData objectForKey:theKey];
+    NSArray *itemsData = [NSKeyedUnarchiver unarchiveObjectWithData:dataToDoList];
+    if (itemsData && [theKey isEqualToString:TO_DO_LIST]) {
+        self.toDoList = itemsData.mutableCopy;
+    }
+    else if(itemsData && [theKey isEqualToString:DONE_LIST]) {
+        self.doneList = itemsData.mutableCopy;
+    }
+}
+
+- (void)savingData:(NSMutableArray*)theData with:(NSString*)theKey {
+    NSData *dataList = [NSKeyedArchiver archivedDataWithRootObject:theData];
+    [self.savedToDoList setObject:dataList forKey:theKey];
+    
 }
 
 
